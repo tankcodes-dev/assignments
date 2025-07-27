@@ -16,6 +16,24 @@ setInterval(() => {
     numberOfRequestsForUser = {};
 }, 1000)
 
+//middleware
+app.use((req, res, next) => {
+    const userId = req.headers["user-id"];
+    if (numberOfRequestsForUser[userId]) {
+        numberOfRequestsForUser[userId] += 1;
+        if (numberOfRequestsForUser[userId] > 5) {
+            res.status(404).send(
+                "Rate Limit. Only 5 request per second allowed."
+            );
+        } else {
+            next();
+        }
+    } else {
+        numberOfRequestsForUser[userId] = 1;
+        next();
+    }
+});
+
 app.get('/user', function(req, res) {
   res.status(200).json({ name: 'john' });
 });
@@ -23,5 +41,10 @@ app.get('/user', function(req, res) {
 app.post('/user', function(req, res) {
   res.status(200).json({ msg: 'created dummy user' });
 });
+
+/* app.listen(3000, (err) => {
+    console.log(`Server started at http://localhost:${3000}`);
+    
+}) */
 
 module.exports = app;
